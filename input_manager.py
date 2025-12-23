@@ -53,8 +53,8 @@ class InputManager:
             InputAction.P3_RIGHT: [pygame.K_RIGHT],
 
             # Player 4 (Foreman)
-            InputAction.P4_LEFT: [pygame.K_KP4],
-            InputAction.P4_RIGHT: [pygame.K_KP6],
+            InputAction.P4_LEFT: [pygame.K_KP4, pygame.K_LEFTBRACKET],
+            InputAction.P4_RIGHT: [pygame.K_KP6, pygame.K_RIGHTBRACKET],
 
             # Menu/UI
             InputAction.MENU_CONFIRM: [pygame.K_RETURN, pygame.K_KP_ENTER],
@@ -243,10 +243,16 @@ class InputManager:
             dict with 'left' and 'right' booleans
         """
         return {
+            # 'held' is good for holding down buttons
             'left': self.is_action_held(InputAction.P1_LEFT),
             'right': self.is_action_held(InputAction.P1_RIGHT),
-            'any': self.is_action_held(InputAction.P1_LEFT) or
-                   self.is_action_held(InputAction.P1_RIGHT),
+            
+            # 'pressed' is good for rapid tapping/mashing
+            'left_pressed': self.is_action_pressed(InputAction.P1_LEFT),
+            'right_pressed': self.is_action_pressed(InputAction.P1_RIGHT),
+            
+            'any': self.is_action_held(InputAction.P1_LEFT) or 
+                   self.is_action_held(InputAction.P1_RIGHT)
         }
 
     def get_player2_input(self):

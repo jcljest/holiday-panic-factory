@@ -35,7 +35,8 @@ class Builder(Player):
         super().__init__(1, QUADRANT_1)
         self.quality_bar = 0.0
         self.decay_rate = 0.5
-        self.fill_rate = 0.15
+        # Lowered slightly because we are now adding it instantly per tap
+        self.fill_rate = 0.10 
 
     def reset(self):
         super().reset()
@@ -46,13 +47,16 @@ class Builder(Player):
         self.decay_rate = decay_rate
 
     def update(self, dt, input_manager):
-        # Decay the bar
+        # 1. Constant Decay
         self.quality_bar -= self.decay_rate * dt
 
-        # Fill on A or D press (using input manager)
+        # 2. Check for TAPS (not holding)
         p1_input = input_manager.get_player1_input()
-        if p1_input['any']:
-            self.quality_bar += self.fill_rate * dt
+        
+        # We use .get() to be safe, checking for the specific 'pressed' events
+        if p1_input.get('left_pressed') or p1_input.get('right_pressed'):
+            # Add value INSTANTLY (Do not multiply by dt for taps!)
+            self.quality_bar += self.fill_rate
 
         # Clamp between 0 and 1
         self.quality_bar = max(0, min(1, self.quality_bar))
@@ -76,7 +80,7 @@ class Builder(Player):
 
         # Instructions
         font_small = pygame.font.Font(None, 24)
-        instruction = font_small.render("Press A and D rapidly!", True, Colors.LIGHT_GRAY)
+        instruction = font_small.render("Mash A and D!", True, Colors.LIGHT_GRAY)
         screen.blit(instruction, (x + 10, y + 50))
 
         # Quality bar
@@ -253,6 +257,24 @@ class Decorator(Player):
     def check_success(self):
         """Check if sequence was completed"""
         return self.success
+    
+    def draw_arrow_shape(self, screen, x, y, direction, color, size=30):
+        """Helper to draw arrow shapes since Fonts are buggy on Mac"""
+        cx, cy = x + size // 2, y + size // 2  # Center point
+        offset = size // 3
+        
+        points = []
+        if direction == 'UP':
+            points = [(cx, cy - offset), (cx - offset, cy + offset), (cx + offset, cy + offset)]
+        elif direction == 'DOWN':
+            points = [(cx, cy + offset), (cx - offset, cy - offset), (cx + offset, cy - offset)]
+        elif direction == 'LEFT':
+            points = [(cx - offset, cy), (cx + offset, cy - offset), (cx + offset, cy + offset)]
+        elif direction == 'RIGHT':
+            points = [(cx + offset, cy), (cx - offset, cy - offset), (cx - offset, cy + offset)]
+            
+        if points:
+            pygame.draw.polygon(screen, color, points)
 
     def draw(self, screen):
         x, y, w, h = self.quadrant
@@ -268,7 +290,7 @@ class Decorator(Player):
 
         # Instructions
         font_small = pygame.font.Font(None, 24)
-        instruction = font_small.render("Enter arrow sequence! (Error = Reset)", True, Colors.LIGHT_GRAY)
+        instruction = font_small.render("Copy the pattern!", True, Colors.LIGHT_GRAY)
         screen.blit(instruction, (x + 10, y + 50))
 
         # Progress
@@ -276,12 +298,11 @@ class Decorator(Player):
         progress = font_small.render(progress_text, True, Colors.YELLOW)
         screen.blit(progress, (x + 10, y + 80))
 
-        # Draw arrow sequence (with wrapping for long sequences)
-        arrow_symbols = {'UP': '↑', 'DOWN': '↓', 'LEFT': '←', 'RIGHT': '→'}
+        # Draw arrow sequence
         arrow_size = 40
-        arrows_per_row = 12
-        start_x = x + 30
-        start_y = y + 120
+        arrows_per_row = 10
+        start_x = x + 40
+        start_y = y + 130
 
         for i, direction in enumerate(self.arrow_sequence):
             row = i // arrows_per_row
@@ -293,12 +314,12 @@ class Decorator(Player):
             if i < self.current_index:
                 color = Colors.GREEN  # Completed
             elif i == self.current_index:
-                color = Colors.YELLOW  # Current
+                color = Colors.YELLOW  # Current target
             else:
                 color = Colors.LIGHT_GRAY  # Upcoming
 
-            arrow_text = font.render(arrow_symbols[direction], True, color)
-            screen.blit(arrow_text, (arrow_x, arrow_y))
+            # USE THE SHAPE DRAWING HELPER INSTEAD OF FONT
+            self.draw_arrow_shape(screen, arrow_x, arrow_y, direction, color, size=30)
 
 
 class Foreman(Player):
@@ -358,7 +379,7 @@ class Foreman(Player):
 
         # Instructions
         font_small = pygame.font.Font(None, 24)
-        instruction = font_small.render("Numpad 4/6 to balance!", True, Colors.LIGHT_GRAY)
+        instruction = font_small.render("Use [ ] Brackets to balance!", True, Colors.LIGHT_GRAY)
         screen.blit(instruction, (x + 10, y + 50))
 
         # Gauge
