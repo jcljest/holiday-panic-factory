@@ -140,55 +140,56 @@ ASSET_MAP = {
     "toys": {
         # Easy Tier
         "socks": {
-            "good": "PLACEHOLDER: Neat Socks",
-            "bad": "PLACEHOLDER: Dirty Socks"
+            "good": "assets/toys/socks_good.png",
+            "bad": "assets/toys/socks_bad.png"
         },
         "ball": {
-            "good": "PLACEHOLDER: Shiny Ball",
-            "bad": "PLACEHOLDER: Deflated Ball"
+            "good": "assets/toys/ball_good.png",
+            "bad": "assets/toys/ball_bad.png"
         },
         "box": {
-            "good": "PLACEHOLDER: Nice Box",
-            "bad": "PLACEHOLDER: Crushed Box"
+            "good": "assets/toys/box_good.png",
+            "bad": "assets/toys/box_bad.png"
         },
         # Standard Tier
         "robot": {
-            "good": "PLACEHOLDER: Cool Robot",
-            "bad": "PLACEHOLDER: Broken Robot"
+            "good": "assets/toys/robot_good.png",
+            "bad": "assets/toys/robot_bad.png"
         },
         "doll": {
-            "good": "PLACEHOLDER: Pretty Doll",
-            "bad": "PLACEHOLDER: Creepy Doll"
+            "good": "assets/toys/doll_good.png",
+            "bad": "assets/toys/doll_bad.png"
         },
         "bicycle": {
-            "good": "PLACEHOLDER: Shiny Bike",
-            "bad": "PLACEHOLDER: Rusty Wheels"
+            "good": "assets/toys/bicycle_good.png",
+            "bad": "assets/toys/bicycle_bad.png"
         },
         # Nightmare Tier
         "piano": {
-            "good": "PLACEHOLDER: Grand Piano",
-            "bad": "PLACEHOLDER: Broken Piano"
+            "good": "assets/toys/piano_good.png",
+            "bad": "assets/toys/piano_bad.png"
         },
         "trex": {
-            "good": "PLACEHOLDER: Cool T-Rex",
-            "bad": "PLACEHOLDER: Angry Lizard"
+            "good": "assets/toys/trex_good.png",
+            "bad": "assets/toys/trex_bad.png"
         },
         "spaceship": {
-            "good": "PLACEHOLDER: Spaceship",
-            "bad": "PLACEHOLDER: Scrap Metal"
+            "good": "assets/toys/spaceship_good.png",
+            "bad": "assets/toys/spaceship_bad.png"
         },
     },
 
     # Wrap Assets (Player 2 - Wrapper)
+    # Note: Based on your merge log, these are currently inside the 'toys' folder
     "wraps": {
-        "good": "PLACEHOLDER: Gold Foil",
-        "bad": "PLACEHOLDER: Torn Wrapping Paper"
+        "good": "assets/toys/gold_foil.png",
+        "bad": "assets/toys/torn_paper.png"
     },
 
     # Bow Assets (Player 3 - Decorator)
     "bows": {
-        "good": "PLACEHOLDER: Satin Ribbon",
-        "bad": "PLACEHOLDER: Toilet Paper Ribbon"
+        "good": "assets/toys/satin_ribbon.png",
+        "bad": "assets/toys/toilet_paper.png"
     },
 }
 

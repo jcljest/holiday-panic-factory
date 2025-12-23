@@ -33,6 +33,8 @@ class Game:
         self.decorator = Decorator()
         self.foreman = Foreman()
 
+        
+
         # Results
         self.round_results = {
             'toy': None,
@@ -46,6 +48,12 @@ class Game:
         # Start menu music if sound manager available
         if self.sound_manager:
             self.sound_manager.play_state_music('menu')
+        
+        # Elf Image
+            self.elf_image = None
+            if self.asset_manager:
+                # We try to load it once. If it fails, it prints one warning, not infinite.
+                self.elf_image = self.asset_manager.load_sprite('assets/characters/elf_head.png', (200, 200))
 
     def start_new_round(self):
         """Start a new round with an order"""
@@ -108,12 +116,14 @@ class Game:
         decorator_success = self.decorator.check_success()
         foreman_success = self.foreman.check_success()
 
-        # Build result package
+        # Build result package using ASSET MANAGER to get images
         toy_asset = self.current_order['toy_asset']
+        
+        # We use .get_sprite() now!
         self.round_results = {
-            'toy': ASSET_MAP['toys'][toy_asset]['good' if builder_success else 'bad'],
-            'wrap': ASSET_MAP['wraps']['good' if wrapper_success else 'bad'],
-            'bow': ASSET_MAP['bows']['good' if decorator_success else 'bad'],
+            'toy': self.asset_manager.get_sprite('toys', toy_asset, 'good' if builder_success else 'bad'),
+            'wrap': self.asset_manager.get_sprite('wraps', 'paper', 'good' if wrapper_success else 'bad'),
+            'bow': self.asset_manager.get_sprite('bows', 'ribbon', 'good' if decorator_success else 'bad'),
             'toy_name': self.current_order['name'],
             'successes': [builder_success, wrapper_success, decorator_success, foreman_success],
         }
@@ -124,10 +134,9 @@ class Game:
 
         # Play reveal music and sound effects
         if self.sound_manager:
-            self.sound_manager.stop_looping_sound('countdown')  # Stop countdown if playing
+            self.sound_manager.stop_looping_sound('countdown')
             self.sound_manager.play_state_music('reveal')
 
-            # Play appropriate sound based on success
             if round_score == 4:
                 self.sound_manager.play_sound('perfect')
             elif round_score >= 2:
@@ -200,13 +209,17 @@ class Game:
 
     def draw_menu(self, screen):
 
-        # 1. Draw the background image first (if it exists)
+        # 1. Draw the background image (Safe Check)
+        bg_drawn = False
         if self.asset_manager:
-            # Assuming your config.py keys the background as 'menu_bg'
             bg_image = self.asset_manager.get_background('menu')
-            
             if bg_image:
                 screen.blit(bg_image, (0, 0))
+                bg_drawn = True
+        
+        # If no background image, fill with color so text is readable
+        if not bg_drawn:
+            screen.fill(Colors.BLACK)
 
         """Draw main menu"""
         font_large = pygame.font.Font(None, 72)
@@ -244,33 +257,45 @@ class Game:
 
     def draw_briefing(self, screen):
         """Draw briefing screen with order details"""
-        # Background color based on tier
-        if self.current_tier == OrderTier.EASY:
-            bg_color = Colors.TIER_EASY
-        elif self.current_tier == OrderTier.STANDARD:
-            bg_color = Colors.TIER_STANDARD
+        
+        # Draw Background if available
+        bg_name = 'briefing_easy'
+        if self.current_tier == OrderTier.STANDARD: bg_name = 'briefing_standard'
+        if self.current_tier == OrderTier.NIGHTMARE: bg_name = 'briefing_nightmare'
+        
+        if self.asset_manager:
+            bg = self.asset_manager.get_background(bg_name)
+            if bg:
+                screen.blit(bg, (0,0))
+            else:
+                screen.fill(Colors.DARK_GRAY)
         else:
-            bg_color = Colors.TIER_NIGHTMARE
-
-        screen.fill(bg_color)
+            screen.fill(Colors.DARK_GRAY)
 
         # Title
         font_large = pygame.font.Font(None, 64)
         title = font_large.render(f"ROUND {self.round_number}", True, Colors.WHITE)
-        title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 150))
+        title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 100))
         screen.blit(title, title_rect)
 
-        # Elf placeholder
-        font_medium = pygame.font.Font(None, 48)
-        elf = font_medium.render("[ELF HEAD PLACEHOLDER]", True, Colors.BLACK)
-        elf_rect = elf.get_rect(center=(SCREEN_WIDTH // 2, 250))
-        screen.blit(elf, elf_rect)
+        # Elf Graphic (Uses the pre-loaded variable)
+        if self.elf_image:
+            elf_rect = self.elf_image.get_rect(center=(SCREEN_WIDTH // 2, 250))
+            screen.blit(self.elf_image, elf_rect)
+        else:
+            # Fallback text if image is missing
+            font_medium = pygame.font.Font(None, 48)
+            elf = font_medium.render("[ELF HEAD]", True, Colors.BLACK)
+            elf_rect = elf.get_rect(center=(SCREEN_WIDTH // 2, 250))
+            screen.blit(elf, elf_rect)
 
         # Dialog
         font_dialog = pygame.font.Font(None, 42)
-        dialog = font_dialog.render(f'"{self.current_order["dialog"]}"', True, Colors.WHITE)
-        dialog_rect = dialog.get_rect(center=(SCREEN_WIDTH // 2, 350))
-        screen.blit(dialog, dialog_rect)
+        # Add a black background rect for text readability
+        dialog_surf = font_dialog.render(f'"{self.current_order["dialog"]}"', True, Colors.WHITE)
+        dialog_rect = dialog_surf.get_rect(center=(SCREEN_WIDTH // 2, 400))
+        pygame.draw.rect(screen, (0,0,0, 180), dialog_rect.inflate(20, 20)) # Semi-transparent bg
+        screen.blit(dialog_surf, dialog_rect)
 
         # Order details
         font_small = pygame.font.Font(None, 32)
@@ -280,7 +305,7 @@ class Game:
             f"Difficulty: {['', 'EASY', 'STANDARD', 'NIGHTMARE'][self.current_tier]}",
         ]
 
-        y_offset = 450
+        y_offset = 480
         for detail in details:
             text = font_small.render(detail, True, Colors.WHITE)
             text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, y_offset))
@@ -288,6 +313,7 @@ class Game:
             y_offset += 40
 
         # Timer
+        font_medium = pygame.font.Font(None, 48)
         timer_text = font_medium.render(f"Starting in {int(self.state_timer) + 1}...", True, Colors.YELLOW)
         timer_rect = timer_text.get_rect(center=(SCREEN_WIDTH // 2, 600))
         screen.blit(timer_text, timer_rect)
@@ -320,41 +346,62 @@ class Game:
 
     def draw_reveal(self, screen):
         """Draw the reveal screen showing the final gift"""
-        screen.fill(Colors.DARK_GRAY)
+        
+        # 1. Draw Background
+        # We try to load the specific 'reveal' background. 
+        # If missing, we default to Dark Gray.
+        if self.asset_manager:
+            bg = self.asset_manager.get_background('reveal')
+            if bg:
+                screen.blit(bg, (0, 0))
+            else:
+                screen.fill(Colors.DARK_GRAY)
+        else:
+            screen.fill(Colors.DARK_GRAY)
 
         font_large = pygame.font.Font(None, 64)
         font_medium = pygame.font.Font(None, 48)
         font_small = pygame.font.Font(None, 32)
 
-        # Title
+        # 2. Draw Title
         title = font_large.render("QUALITY CONTROL", True, Colors.GOLD)
         title_rect = title.get_rect(center=(SCREEN_WIDTH // 2, 80))
         screen.blit(title, title_rect)
 
-        # The conveyor belt effect - show the three layers
-        layer_y = 200
-        layer_spacing = 100
+        # 3. Draw The "Conveyor Belt" Items (Toy, Wrap, Bow)
+        # We define a helper function inside this method to handle drawing
+        # because the logic is the same for all 3 items.
+        
+        center_x = SCREEN_WIDTH // 2
+        start_y = 200    # Where the first item (Toy) starts
+        spacing = 120    # How much space between items vertically
 
-        # Layer 1: Toy
-        toy_text = font_medium.render(self.round_results['toy'], True, Colors.WHITE)
-        toy_rect = toy_text.get_rect(center=(SCREEN_WIDTH // 2, layer_y))
-        screen.blit(toy_text, toy_rect)
+        def draw_item(item, y_pos):
+            """Helper to draw an image, or text if the image is missing"""
+            if isinstance(item, pygame.Surface):
+                # It's an image! 
+                # OPTIONAL: Scale it down if it's too tall (over 100px) so it fits
+                w, h = item.get_size()
+                if h > 100:
+                    scale = 100 / h
+                    item = pygame.transform.scale(item, (int(w * scale), 100))
+                
+                rect = item.get_rect(center=(center_x, y_pos))
+                screen.blit(item, rect)
+            else:
+                # It's text (fallback string) or None
+                text_str = str(item) if item else "MISSING ASSET"
+                text = font_medium.render(text_str, True, Colors.WHITE)
+                rect = text.get_rect(center=(center_x, y_pos))
+                screen.blit(text, rect)
 
-        layer_y += layer_spacing
+        # Draw the 3 layers separated vertically
+        draw_item(self.round_results['toy'], start_y)
+        draw_item(self.round_results['wrap'], start_y + spacing)
+        draw_item(self.round_results['bow'], start_y + (spacing * 2))
 
-        # Layer 2: Wrap
-        wrap_text = font_medium.render(self.round_results['wrap'], True, Colors.WHITE)
-        wrap_rect = wrap_text.get_rect(center=(SCREEN_WIDTH // 2, layer_y))
-        screen.blit(wrap_text, wrap_rect)
 
-        layer_y += layer_spacing
-
-        # Layer 3: Bow
-        bow_text = font_medium.render(self.round_results['bow'], True, Colors.WHITE)
-        bow_rect = bow_text.get_rect(center=(SCREEN_WIDTH // 2, layer_y))
-        screen.blit(bow_text, bow_rect)
-
-        # Elf commentary
+        # 4. Elf Commentary (Based on Score)
         successes = sum(self.round_results['successes'])
         if successes == 4:
             comment = "PERFECT! This kid is gonna love it!"
@@ -373,7 +420,7 @@ class Game:
         comment_rect = comment_text.get_rect(center=(SCREEN_WIDTH // 2, 550))
         screen.blit(comment_text, comment_rect)
 
-        # Individual results
+        # 5. Individual Player Results (Checkmarks/X's)
         player_results = [
             ("Builder", self.round_results['successes'][0]),
             ("Wrapper", self.round_results['successes'][1]),
@@ -390,7 +437,7 @@ class Game:
             screen.blit(result_text, result_rect)
             result_y += 30
 
-        # Continue prompt
+        # 6. Continue Prompt
         continue_text = font_small.render("Press ENTER for next round", True, Colors.LIGHT_GRAY)
         continue_rect = continue_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 40))
         screen.blit(continue_text, continue_rect)
