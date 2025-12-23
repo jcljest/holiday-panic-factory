@@ -199,6 +199,15 @@ class Game:
             self.draw_reveal(screen)
 
     def draw_menu(self, screen):
+
+        # 1. Draw the background image first (if it exists)
+        if self.asset_manager:
+            # Assuming your config.py keys the background as 'menu_bg'
+            bg_image = self.asset_manager.get_background('menu')
+            
+            if bg_image:
+                screen.blit(bg_image, (0, 0))
+
         """Draw main menu"""
         font_large = pygame.font.Font(None, 72)
         font_medium = pygame.font.Font(None, 48)
