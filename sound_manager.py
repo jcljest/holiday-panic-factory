@@ -5,6 +5,7 @@ Handles music, sound effects, looping, and volume control.
 
 import pygame
 import os
+import config
 
 
 class SoundManager:
@@ -249,21 +250,23 @@ class SoundManager:
 
     def play_state_music(self, state):
         """
-        Play music appropriate for the given game state.
+        Play music appropriate for the given game state using paths from config.py.
 
         Args:
             state: Game state ('menu', 'briefing', 'playing', 'reveal')
         """
-        music_map = {
-            'menu': ('menu_music', 'assets/sounds/music/menu.ogg'),
-            'briefing': ('briefing_music', 'assets/sounds/music/briefing.ogg'),
-            'playing': ('playing_music', 'assets/sounds/music/gameplay.ogg'),
-            'reveal': ('reveal_music', 'assets/sounds/music/reveal.ogg'),
-        }
-
-        if state in music_map:
-            name, path = music_map[state]
+        # Check if the state exists in the config.MUSIC_MAP
+        # This connects the manager to the settings we just fixed in config.py
+        if hasattr(config, 'MUSIC_MAP') and state in config.MUSIC_MAP:
+            path = config.MUSIC_MAP[state]
+            
+            # We create a unique name for the track (e.g. "menu_music")
+            name = f"{state}_music" 
+            
+            # Play it!
             self.play_music(name, path, loops=-1, fade_ms=500)
+        else:
+            print(f"Warning: No music path found for state '{state}'")
 
     def cleanup(self):
         """Clean up sound resources"""

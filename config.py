@@ -219,28 +219,15 @@ BUILDER_QUALITY_LINE = 0.5  # Builder must keep bar above 50%
 WRAPPER_TOLERANCE = 0.02  # Small tolerance for timing
 
 # Sound Asset Paths
-SOUND_MAP = {
-    # Sound Effects
-    'button_press': 'assets/sounds/sfx/button_press.wav',
-    'tick': 'assets/sounds/sfx/tick.wav',
-    'success': 'assets/sounds/sfx/success.wav',
-    'fail': 'assets/sounds/sfx/fail.wav',
-    'countdown': 'assets/sounds/sfx/countdown.wav',
-    'siren': 'assets/sounds/sfx/siren.wav',
-    'whoosh': 'assets/sounds/sfx/whoosh.wav',
-    'thump': 'assets/sounds/sfx/thump.wav',
-    'wrap': 'assets/sounds/sfx/wrap.wav',
-    'ribbon_tie': 'assets/sounds/sfx/ribbon_tie.wav',
-    'error': 'assets/sounds/sfx/error.wav',
-    'perfect': 'assets/sounds/sfx/perfect.wav',
-}
+SOUND_MAP = {}
 
 # Music Asset Paths
 MUSIC_MAP = {
-    'menu': 'assets/sounds/music/menu.ogg',
-    'briefing': 'assets/sounds/music/briefing.ogg',
-    'playing': 'assets/sounds/music/gameplay.ogg',
-    'reveal': 'assets/sounds/music/reveal.ogg',
+    'menu': 'assets/music/menu.mp3',
+    'briefing': 'assets/music/briefing.mp3',
+    'playing': 'assets/music/gameplay.mp3',
+    # We reuse 'menu.mp3' for the reveal screen since you don't have a specific reveal song yet
+    'reveal': 'assets/music/menu.mp3',
 }
 
 # Character Asset Paths
